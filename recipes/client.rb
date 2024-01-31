@@ -20,12 +20,18 @@
 include_recipe "collectd"
 
 servers = []
-search(:node, 'recipes:collectd\\:\\:server') do |n|
-  servers << n['fqdn']
+
+if node["collectd"]["server_ip"]
+  servers << node["collectd"]["server_ip"]
+else
+  search(:node, 'recipes:collectd\\:\\:server') do |n|
+    servers << n['fqdn']
+  end
 end
 
 if servers.empty?
-  raise "No servers found. Please configure at least one node with collectd::server."
+  raise "No servers found. Please configure at least one node with collectd::server, " +
+    "or define node[\"collectd\"][\"server_ip\"]."
 end
 
 collectd_plugin "network" do
